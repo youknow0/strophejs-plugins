@@ -19,6 +19,7 @@ This library is free software; you can redistribute it and/or modify it
 */
 Strophe.addConnectionPlugin('register', {
     _connection: null,
+    _register_even_if_not_announced: false,
 
     //The plugin must have the init function.
     init: function(conn) {
@@ -148,6 +149,23 @@ Strophe.addConnectionPlugin('register', {
         conn.connect(this.domain, "", callback, wait, hold, route);
     },
 
+    /** Function: register_even_if_not_anncounced
+     *  Try to register with the server even if it does not announce IBR
+     *  support.
+     *
+     *  Some XMPP servers do not announce IBR support over BOSH connections,
+     *  for example Prosody 0.8.2 (as in the debian repos). If this option
+     *  is enabled, we dont care about what the server tells us and try
+     *  to register anyways. Note that this is nothing more than a ugly
+     *  hack that violates the XMPP protocol.
+     * 
+     *  Also note that the REGIFAIL event will probably not fire if this 
+     *  option is set.
+     */
+    register_even_if_not_announced: function(reg) {
+        this._register_even_if_not_announced = reg;
+    },
+
     /** PrivateFunction: _register_cb
      *  _Private_ handler for initial registration request.
      *
@@ -195,7 +213,7 @@ Strophe.addConnectionPlugin('register', {
             return;
         }
 
-        if (register.length === 0) {
+        if (!this._register_even_if_not_announced && (register.length === 0)) {
             conn._changeConnectStatus(Strophe.Status.REGIFAIL, null);
             return;
         }
@@ -316,11 +334,10 @@ Strophe.addConnectionPlugin('register', {
             }
 
         } else {
+            Strophe.info("Registered successful.");
 
-		Strophe.info("Registered successful.");
-
-		conn._changeConnectStatus(Strophe.Status.REGISTERED, null);
-	}
+            conn._changeConnectStatus(Strophe.Status.REGISTERED, null);
+        }
 
         return false;
     }
