@@ -314,11 +314,13 @@ Strophe.addConnectionPlugin('register', {
             } else {
                 conn._changeConnectStatus(Strophe.Status.REGIFAIL, error);
             }
-        }
 
-        Strophe.info("Registered successful.");
+        } else {
 
-        conn._changeConnectStatus(Strophe.Status.REGISTERED, null);
+		Strophe.info("Registered successful.");
+
+		conn._changeConnectStatus(Strophe.Status.REGISTERED, null);
+	}
 
         return false;
     }
